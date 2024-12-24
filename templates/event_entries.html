@@ -1,0 +1,230 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Entries - {{ event.event_name }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+</head>
+<body class="bg-gray-900 min-h-screen font-['Poppins']">
+    {% if request.session.email %}
+    <div class="container mx-auto px-4 sm:px-6 py-4 sm:py-8">
+        <!-- Header Section -->
+        <div class="mb-8 sm:mb-12">
+            <div class="flex items-center justify-between">
+                <a href="{% url 'dashboard' %}" class="rounded-full h-8 w-8 sm:h-10 sm:w-10 flex items-center justify-center border-2 border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white transition-all duration-300">
+                    <i class="fas fa-arrow-left text-sm sm:text-base"></i>
+                </a>
+                <div class="text-right">
+                    <span class="text-gray-300 text-sm sm:text-base">Total Entries: {{ entries|length }}</span>
+                </div>
+            </div>
+            
+            <div class="text-center mt-4 sm:mt-6">
+                <h1 class="font-['Playfair_Display'] text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-2">
+                    {{ event.event_name }}
+                </h1>
+                <div class="h-1 w-32 sm:w-48 bg-gradient-to-r from-blue-500 to-blue-600 mx-auto mt-4 rounded-full"></div>
+            </div>
+        </div>
+
+        <!-- Search and Filters -->
+        <div class="bg-gray-800 border border-gray-700 shadow-lg rounded-xl p-4 sm:p-6 mb-6 sm:mb-8">
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div class="relative flex-1 w-full sm:w-auto">
+                    <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    <input type="text" id="searchInput" placeholder="Search by name..." 
+                           class="w-full pl-12 pr-4 py-2 sm:py-3 rounded-full bg-gray-900 border-2 border-gray-700 text-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300 text-sm sm:text-base">
+                </div>
+                
+                <div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+                    <select id="sortOrder" 
+                            class="px-4 sm:px-6 py-2 sm:py-3 rounded-full bg-gray-900 border-2 border-gray-700 text-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300 text-sm sm:text-base w-full sm:w-auto">
+                        <option value="name_asc">Name (A-Z)</option>
+                        <option value="name_desc">Name (Z-A)</option>
+                        <option value="attending_yes">Attending Only</option>
+                        <option value="attending_no">Not Attending Only</option>
+                        {% comment %} <option value="date_newest">Newest First</option>
+                        <option value="date_oldest">Oldest First</option> {% endcomment %}
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Entries Table -->
+        <div class="bg-gray-800 border border-gray-700 shadow-md rounded-lg overflow-x-auto">
+            <table class="w-full min-w-[640px]">
+                <thead>
+                    <tr class="bg-gray-700/50 border-b border-gray-600">
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-300">Name</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-300">Email</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-300">Phone</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-300">Attending</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-300">Attendees</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-300">Transport</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-300">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-700" id="entriesTableBody">
+                    {% if entries %}
+                        {% for entry in entries %}
+                        <tr class="hover:bg-gray-700/30 transition-all duration-200" data-registration-date="{{ entry.registration.created_at|date:'c' }}">
+                            <td class="px-6 py-4">
+                                <div class="text-white">{{ entry.registration.name|default:"Not provided" }}</div>
+                                {% if entry.registration.registrar_document %}
+                                    <div class="mt-1">
+                                        <a href="{{ entry.registration.registrar_document.url }}" 
+                                           class="text-blue-400 hover:text-blue-300 hover:underline text-sm flex items-center gap-1"
+                                           download>
+                                            <i class="fas fa-download"></i>
+                                            <span>Download Document</span>
+                                        </a>
+                                    </div>
+                                {% else %}
+                                    <div class="text-gray-500 text-sm mt-1">No document provided</div>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 text-gray-300">{{ entry.registration.email|default:"Not provided" }}</td>
+                            <td class="px-6 py-4 text-gray-300">{{ entry.registration.mobile_number }}</td>
+                            <td class="px-6 py-4">
+                                <span class="text-green-400">yes</span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-gray-300">
+                                    {% for attendee in entry.registration.attendee_details %}
+                                        <p>{{ attendee.name|default:"Not provided" }} - {{ attendee.mobile_number|default:"Not provided" }}</p>
+                                        {% if attendee.registrar_document %}
+                                            <a href="{{ attendee.registrar_document }}" class="text-blue-400 hover:underline" download="{{ attendee.name }}">Download Document</a>
+                                        {% else %}
+                                            <span class="text-gray-500">No document available</span>
+                                        {% endif %}
+                                    {% empty %}
+                                        <p>No attendees available</p>
+                                    {% endfor %}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-gray-300">
+                                    {% if entry.transport_details.arrival.mode_of_transport %}
+                                        <p><strong>Arrival Transport:</strong></p>
+                                        {% if entry.transport_details.arrival.flight_number %}
+                                            <p>Flight Number: {{ entry.transport_details.arrival.flight_number }}</p>
+                                        {% endif %}
+                                        {% if entry.transport_details.arrival.terminal_name %}
+                                            <p>Terminal: {{ entry.transport_details.arrival.terminal_name }}</p>
+                                        {% endif %}
+                                        {% if entry.transport_details.arrival.train_number %}
+                                            <p>Train Number: {{ entry.transport_details.arrival.train_number }}</p>
+                                        {% endif %}
+                                        {% if entry.transport_details.arrival.train_arrival_station %}
+                                            <p>Arrival Station: {{ entry.transport_details.arrival.train_arrival_station }}</p>
+                                        {% endif %}
+                                        {% if entry.transport_details.arrival.bus_number %}
+                                            <p>Bus Number: {{ entry.transport_details.arrival.bus_number }}</p>
+                                        {% endif %}
+                                        {% if entry.transport_details.arrival.bus_stop %}
+                                            <p>Bus Stop: {{ entry.transport_details.arrival.bus_stop }}</p>
+                                        {% endif %}
+                                        {% if entry.transport_details.arrival.arrival_date %}
+                                            <p>Arrival Date: {{ entry.transport_details.arrival.arrival_date }}</p>
+                                        {% endif %}
+                                    {% else %}
+                                        <p><strong>No Arrival Transport Details Available</strong></p>
+                                    {% endif %}
+
+                                    {% if entry.transport_details.departure.mode_of_transport %}
+                                        <p class="mt-4"><strong>Departure Transport:</strong></p>
+                                        {% if entry.transport_details.departure.flight_number %}
+                                            <p>Flight Number: {{ entry.transport_details.departure.flight_number }}</p>
+                                        {% endif %}
+                                        {% if entry.transport_details.departure.terminal_name %}
+                                            <p>Terminal: {{ entry.transport_details.departure.terminal_name }}</p>
+                                        {% endif %}
+                                        {% if entry.transport_details.departure.train_number %}
+                                            <p>Train Number: {{ entry.transport_details.departure.train_number }}</p>
+                                        {% endif %}
+                                        {% if entry.transport_details.departure.train_arrival_station %}
+                                            <p>Arrival Station: {{ entry.transport_details.departure.train_arrival_station }}</p>
+                                        {% endif %}
+                                        {% if entry.transport_details.departure.bus_number %}
+                                            <p>Bus Number: {{ entry.transport_details.departure.bus_number }}</p>
+                                        {% endif %}
+                                        {% if entry.transport_details.departure.bus_stop %}
+                                            <p>Bus Stop: {{ entry.transport_details.departure.bus_stop }}</p>
+                                        {% endif %}
+                                        {% if entry.transport_details.departure.departure_date %}
+                                            <p>Departure Date: {{ entry.transport_details.departure.departure_date }}</p>
+                                        {% endif %}
+                                    {% else %}
+                                        <p><strong>No Departure Transport Details Available</strong></p>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                {% comment %} <form action="{% url 'delete_entry' event.event_name entry.registration.id %}" method="post" onsubmit="return confirm('Are you sure you want to delete this entry?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="text-red-500 hover:text-red-700 transition-all duration-300">Delete</button>
+                                </form> {% endcomment %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="px-6 py-8 text-center">
+                            <i class="fas fa-inbox text-4xl text-gray-500 mb-4"></i>
+                            <p class="text-gray-400">No entries found</p>
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Attendees Popup -->
+    <div id="attendeesPopup" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-gray-800 border border-gray-700 rounded-xl p-6 max-w-md w-full mx-4 transform scale-0 opacity-0 transition-all duration-300">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold text-white">Attendee Details</h3>
+                <button class="text-gray-400 hover:text-white" id="closePopup">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="attendeesList" class="text-gray-300">
+                <!-- Attendee details will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Transport Popup -->
+    <div id="transportPopup" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-gray-800 border border-gray-700 rounded-xl p-6 max-w-md w-full mx-4 transform scale-0 opacity-0 transition-all duration-300">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold text-white">Transport Details</h3>
+                <button class="text-gray-400 hover:text-white" onclick="closeTransportPopup()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="transportDetails" class="text-gray-300">
+                <!-- Transport details will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <div class="bg-gray-800 border border-gray-700 p-8 rounded-2xl shadow-lg w-full max-w-md animate__animated animate__fadeIn">
+        <h1 class="font-['Playfair_Display'] text-3xl font-bold mb-6 text-center text-white">Please Log In to Your Account</h1>
+        <p class="text-center text-gray-300 mb-4">Access your dashboard and manage your events efficiently.</p>
+        <div class="flex justify-center">
+            <a href="{% url 'home' %}" class="w-full py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-lg shadow-md hover:opacity-90 transition-all duration-300 transform hover:scale-105 text-center">Log In</a>
+        </div>
+    </div>
+    {% endif %}
+    <script src="{% static 'js/event_entries.js' %}?v=2"></script>
+</body>
+</html>
