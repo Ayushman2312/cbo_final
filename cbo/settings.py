@@ -82,7 +82,7 @@ DATABASES = {
         'NAME': 'cbo',
         'USER': 'admin',
         'PASSWORD': 'Ayushman@2312',
-        'HOST': 'localhost',
+        'HOST': '13.232.7.153',
         'PORT': '5432', # default PostgreSQL port
     }
 }
