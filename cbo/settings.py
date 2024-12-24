@@ -79,11 +79,11 @@ WSGI_APPLICATION = 'cbo.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'postgres',
+        'NAME': 'cbo',
         'USER': 'admin',
         'PASSWORD': 'Ayushman@2312',
-        'HOST': '13.232.7.153',
-        'PORT': '5432', # default PostgreSQL port
+        'HOST': 'localhost',
+        'PORT': '', # default PostgreSQL port
     }
 }
 
