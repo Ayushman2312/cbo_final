@@ -141,7 +141,7 @@ USE_TZ = True
 # MEDIA_ROOT = '/home4/waskilag/cbo/cbo/media/'
 
 STATIC_URL = 'static/'
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
